@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar_path',
+        'description',
     ];
 
     /**
@@ -45,4 +47,26 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // 投稿リレーション（後でpostsテーブルが出来たら有効）
+    public function posts()
+    {
+        return $this->hasMany(\App\Models\Post::class);
+    }
+
+    // フォロー関連（後でfollowsテーブル作成時に有効）
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id');
+        
+    }
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followed_id');
+    }
+    public function valueAnswers()
+    {
+        return $this->hasMany(\App\Models\ValueAnswer::class);
+    }
+
 }

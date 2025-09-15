@@ -13,8 +13,15 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('フィード') }}
                     </x-nav-link>
+                    <x-nav-link href="{{ route('mypage.show') }}" :active="request()->routeIs('mypage.show')">
+                        マイページ
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('values.survey.show') }}" :active="request()->routeIs('values.survey.*')">
+                        Survey
+                    </x-nav-link>
+
                 </div>
             </div>
 
@@ -70,6 +77,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            <x-nav-link href="{{ route('mypage.show') }}" :active="request()->routeIs('mypage.show')">
+                My Page
+            </x-nav-link>
+
         </div>
 
         <!-- Responsive Settings Options -->

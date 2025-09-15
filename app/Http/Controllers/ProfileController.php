@@ -26,13 +26,24 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // name, email（Breezeの既存処理）
+        $user->fill($request->validated());
+
+        // 追加分：自己紹介
+        if ($request->filled('description')) {
+            $user->description = $request->string('description');
         }
 
-        $request->user()->save();
+        // 追加分：アバター画像
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public'); // storage/app/public/avatars
+            $user->avatar_path = $path;
+        }
+
+        $user->save();
+
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

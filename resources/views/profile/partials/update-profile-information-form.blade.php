@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
 
@@ -47,6 +47,29 @@
             @endif
         </div>
 
+                <!-- {{-- プロフィール画像 --}} -->
+        <div>
+            <x-input-label for="avatar" value="プロフィール画像" />
+            <input id="avatar" name="avatar" type="file" accept="image/*" class="mt-1 block w-full">
+            <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
+            @if(auth()->user()->avatar_path)
+                <img
+                    src="{{ asset('storage/'.auth()->user()->avatar_path) }}"
+                    alt="avatar"
+                    class="mt-3 rounded-full object-cover"
+                    style="width:96px;height:96px;object-fit:cover;border-radius:9999px"
+                >
+            @endif
+        </div>
+
+        <!-- -- 自己紹介 -- -->
+        <div>
+            <x-input-label for="description" value="自己紹介" />
+            <textarea id="description" name="description" rows="5"
+                    class="mt-1 block w-full">{{ old('description', auth()->user()->description) }}</textarea>
+            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
@@ -62,3 +85,4 @@
         </div>
     </form>
 </section>
+
