@@ -26,7 +26,11 @@ class PostController extends Controller
     public function create(Request $request)  // ← use Illuminate\Http\Request; を使う形でOK
     {
         $topic = Topic::find($request->query('topic_id')); // nullでもOK
-        return view('posts.create', compact('topic'));
+        // お題が未指定ならプルダウン用に一覧を渡す（公開中のみ）
+        $topics = $topic ? collect() : Topic::where('is_published', true)
+            ->orderByDesc('id')->limit(20)->get(['id','title']);
+
+        return view('posts.create', compact('topic','topics'));
     }
 
 

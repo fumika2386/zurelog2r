@@ -6,7 +6,7 @@ class MyPageController extends Controller
 {
     public function show()
     {
-        $user = auth()->user()->loadCount('posts'); // posts_count
+        $user = auth()->user()->loadCount('posts','followers','followings'); // posts_count
 
         $followersCount  = method_exists($user,'followers')  ? $user->followers()->count()  : 0;
         $followingsCount = method_exists($user,'followings') ? $user->followings()->count() : 0;

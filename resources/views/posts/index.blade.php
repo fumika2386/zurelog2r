@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl">投稿一覧</h2></x-slot>
+    <x-slot name="header"><h2 class="font-semibold text-xl">みんなの投稿一覧</h2></x-slot>
     <div class="max-w-4xl mx-auto p-6">
         <a href="{{ route('posts.create') }}" class="px-3 py-2 rounded bg-blue-600 text-white">新規投稿</a>
         <div class="mt-4 space-y-4">

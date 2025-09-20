@@ -22,8 +22,15 @@
 
                 <div class="mt-6 flex gap-6 text-sm">
                     <div><span class="font-semibold">{{ $user->posts_count ?? 0 }}</span> 投稿</div>
-                    <div><span class="font-semibold">{{ $followersCount }}</span> フォロワー</div>
-                    <div><span class="font-semibold">{{ $followingsCount }}</span> フォロー中</div>
+                        <div class="mt-4 flex items-center gap-4">
+                            <a href="{{ route('users.followers', $user) }}" class="text-sm underline">
+                                フォロワー {{ $user->followers_count }}
+                            </a>
+                            <a href="{{ route('users.followings', $user) }}" class="text-sm underline">
+                                フォロー {{ $user->followings_count }}
+                            </a>
+                        </div>
+
                 </div>
 
                 <a href="{{ route('profile.edit') }}" class="mt-6 inline-block px-4 py-2 rounded-xl bg-blue-600 text-white">

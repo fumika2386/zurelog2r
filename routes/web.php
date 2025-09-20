@@ -1,32 +1,34 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MyPageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\ValueSurveyController;
-use App\Http\Controllers\PostController;   
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\FollowController;
 
 Route::get('/', fn () => view('welcome'));
 
-Route::get('/dashboard', fn () => view('dashboard'))
-    ->middleware(['auth','verified'])->name('dashboard');
+Route::get('/dashboard', fn () => redirect()->route('posts.index'))
+    ->middleware(['auth','verified'])
+    ->name('dashboard');
 
-/**
- * Topics（公開）
- */
-Route::get('/topics', [TopicController::class, 'index'])->name('topics.index');          // 公開: お題一覧
-Route::get('/topics/{topic}/posts', [TopicController::class, 'posts'])->name('topics.posts'); // 公開: 皆の投稿
+/** Topics（公開） */
+Route::get('/topics', [TopicController::class, 'index'])->name('topics.index');
+Route::get('/topics/{topic}/posts', [TopicController::class, 'posts'])->name('topics.posts');
 
-/**
- * Posts（公開）… 投稿の閲覧は誰でもOKにする
- *  ※「topics.posts」から個別詳細へ飛べるように
- */
-Route::resource('posts', PostController::class)->only(['index','show']);
+/** Users（公開） */
+Route::get('/users/{user}/followers',  [FollowController::class, 'followers'])->whereNumber('user')->name('users.followers');
+Route::get('/users/{user}/followings', [FollowController::class, 'followings'])->whereNumber('user')->name('users.followings');
+Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user')->name('users.show');
 
-/**
- * ログイン必須エリア
- */
+/** 認証必須（ここで /posts/create を“先に”登録） */
 Route::middleware(['auth','verified'])->group(function () {
+    Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::resource('posts', PostController::class)->only(['store','edit','update','destroy']);
+
     // MyPage / Profile / Survey
     Route::get('/me', [MyPageController::class, 'show'])->name('mypage.show');
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,9 +36,9 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/values/survey',  [ValueSurveyController::class, 'show'])->name('values.survey.show');
     Route::post('/values/survey', [ValueSurveyController::class, 'store'])->name('values.survey.store');
-
-    // Posts（作成・更新・削除はログイン必須）
-    Route::resource('posts', PostController::class)->only(['create','store','edit','update','destroy']);
 });
+
+/** Posts（公開：閲覧）— 最後に置く */
+Route::resource('posts', PostController::class)->only(['index','show']);
 
 require __DIR__.'/auth.php';

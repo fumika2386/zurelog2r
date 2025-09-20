@@ -15,15 +15,22 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('フィード') }}
                     </x-nav-link>
+                        {{-- ★ 新規投稿（ログイン時のみ） --}}
+                    @auth
+                        <x-nav-link href="{{ route('posts.create') }}" :active="request()->routeIs('posts.create')">
+                            新規投稿
+                        </x-nav-link>
+                    @endauth
                     
                     <x-nav-link href="{{ route('topics.index') }}" :active="request()->routeIs('topics.*')">
-                        Topics
+                        トピック
                     </x-nav-link>
+
                     <x-nav-link href="{{ route('mypage.show') }}" :active="request()->routeIs('mypage.show')">
                         マイページ
                     </x-nav-link>
                     <x-nav-link href="{{ route('values.survey.show') }}" :active="request()->routeIs('values.survey.*')">
-                        Survey
+                        価値観アンケート
                     </x-nav-link>
 
                 </div>
@@ -46,7 +53,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('プロフィール編集') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->

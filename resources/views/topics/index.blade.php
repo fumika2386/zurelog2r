@@ -15,6 +15,8 @@
                     {{ $topic->posts_count }} 件の投稿
                 </a>
 
+                {{-- DEBUG: 生成URLを確認 --}}
+
                 <a href="{{ route('posts.create', ['topic_id' => $topic->id]) }}"
                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border  bg-gray-100 text-gray-900 w-auto shrink-0 ml-auto relative z-10">
                     このお題で投稿
