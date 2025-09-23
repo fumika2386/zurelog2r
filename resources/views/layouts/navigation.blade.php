@@ -70,6 +70,9 @@
                 </x-dropdown>
             </div>
 
+
+
+
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
@@ -124,3 +127,10 @@
         </div>
     </div>
 </nav>
+<style>
+  [data-active="true"]{position:relative;}
+  [data-active="true"]::after{
+    content:""; position:absolute; left:0; bottom:-10px; width:100%; height:3px;
+    background:#f97316; border-radius:2px; /* primary-500 */
+  }
+</style>
