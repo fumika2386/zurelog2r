@@ -36,6 +36,11 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/values/survey',  [ValueSurveyController::class, 'show'])->name('values.survey.show');
     Route::post('/values/survey', [ValueSurveyController::class, 'store'])->name('values.survey.store');
+
+    Route::post('/users/{user}/follow',   [FollowController::class, 'store'])
+        ->whereNumber('user')->name('users.follow');
+    Route::delete('/users/{user}/follow', [FollowController::class, 'destroy'])
+        ->whereNumber('user')->name('users.unfollow');
 });
 
 /** Posts（公開：閲覧）— 最後に置く */

@@ -42,12 +42,12 @@
                     @if($iFollow)
                         <form method="post" action="{{ route('users.unfollow', $user) }}">
                             @csrf @method('delete')
-                            <button class="px-3 py-1 rounded bg-gray-300 text-gray-900 text-sm">フォロー中</button>
+                            <button class="px-3 py-1 rounded bg-gray-600 text-black text-sm">フォロー中</button>
                         </form>
                     @else
                         <form method="post" action="{{ route('users.follow', $user) }}">
                             @csrf
-                            <button class="px-3 py-1 rounded bg-blue-600 text-white text-sm">フォロー</button>
+                            <button class="px-3 py-1 rounded bg-blue-600 text-black text-sm">フォロー</button>
                         </form>
                     @endif
                 @endunless
