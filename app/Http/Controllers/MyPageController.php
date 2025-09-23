@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 class MyPageController extends Controller
 {
-    public function show()
+    public function show(\Illuminate\Http\Request $request)
     {
-        $user = auth()->user()->loadCount('posts','followers','followings'); // posts_count
+        $user = $request->user()->loadCount(['posts','followers','followings']);
 
-        $followersCount  = method_exists($user,'followers')  ? $user->followers()->count()  : 0;
-        $followingsCount = method_exists($user,'followings') ? $user->followings()->count() : 0;
+        // 自分の投稿をページネーションで取得（10件/ページ）
+        $posts = $user->posts()->latest()->paginate(5)->withQueryString();
 
-        return view('mypage.show', compact('user','followersCount','followingsCount'));
+        return view('mypage.show', compact('user','posts'));
     }
+
 }

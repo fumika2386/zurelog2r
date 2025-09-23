@@ -5,9 +5,9 @@
   </x-slot>
 
   <div class="container-page">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
       {{-- 左：プロフィールカード --}}
-      <section class="card">
+      <section class="card self-start">
         <div class="flex items-center gap-4">
           <img
             src="{{ $user->avatar_path ? asset('storage/'.$user->avatar_path) : 'https://placehold.co/192x192' }}"
@@ -43,34 +43,35 @@
       </section>
 
       {{-- 右：最新投稿 --}}
-      <section class="md:col-span-2 card">
-        <h3 class="text-lg font-semibold mb-4">あなたの最新投稿</h3>
+        <section class="md:col-span-2 card">
+        <h3 class="text-lg font-semibold mb-4">あなたの投稿</h3>
 
-        @php
-          $latest = $user->posts()->latest()->limit(5)->get();
-        @endphp
-
-        @forelse($latest as $post)
-          <article class="py-3 border-b last:border-0">
+        @forelse($posts as $post)
+            <article class="py-3 border-b last:border-0">
             <a href="{{ route('posts.show', $post) }}" class="font-semibold hover:text-primary-600">
-              {{ $post->title }}
+                {{ $post->title }}
             </a>
             <div class="text-xs text-accent-500">{{ $post->created_at->format('Y/m/d H:i') }}</div>
             @if($post->body)
-              <p class="mt-1 text-sm text-accent-700 dark:text-accent-200 line-clamp-3">
+                <p class="mt-1 text-sm text-accent-700 dark:text-accent-200 line-clamp-3">
                 {{ \Illuminate\Support\Str::limit(strip_tags($post->body), 160) }}
-              </p>
+                </p>
             @endif
-          </article>
+            </article>
         @empty
-          <p class="text-accent-500">まだ投稿がありません。</p>
+            <p class="text-accent-500">まだ投稿がありません。</p>
         @endforelse
 
-        <div class="mt-4 flex gap-3">
-          <a href="{{ route('posts.index') }}" class="btn-outline">投稿一覧へ</a>
-          <a href="{{ route('posts.create') }}" class="btn-primary">新規投稿</a>
+        {{-- ★ ページネーション --}}
+        <div class="mt-4">
+            {{ $posts->links() }}
         </div>
-      </section>
+
+        {{-- 「投稿一覧へ」は削除。新規投稿だけ残す --}}
+        <div class="mt-4">
+            <a href="{{ route('posts.create') }}" class="btn-primary">新規投稿</a>
+        </div>
+        </section>   
     </div>
   </div>
 </x-app-layout>
