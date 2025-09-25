@@ -6,9 +6,13 @@ class MyPageController extends Controller
 {
     public function show(\Illuminate\Http\Request $request)
     {
-        $user = auth()->user();
+        $user = auth()->user()
+            ->load([
+                'tags' => fn($q) => $q->orderBy('sort_order'),
+            ])
+            ->loadCount(['posts','followers','followings']);
 
-        $posts = $user->posts()
+            $posts = $user->posts()
         ->withCount([
             'reactions as r_total'   => fn($q)=>$q,
             'reactions as r_s0'      => fn($q)=>$q->where('stamp',0),

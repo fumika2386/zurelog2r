@@ -5,30 +5,80 @@
   </x-slot>
 
   {{-- 並べ替えタブ --}}
-  @php
-    $q = request()->except('page'); // ページ以外の既存クエリ保持
-    $link = fn($key) => route('posts.index', array_merge($q, ['sort'=>$key]));
-    $active = $sort ?? request('sort','new');
-  @endphp
+@php
+  // 既存の選択状態
+  $selected = collect(request()->query('tags', []))->map(fn($v)=>(int)$v)->filter()->values()->all();
+  $allTags = \App\Models\Tag::orderBy('sort_order')->get();
+  $sortNow = request('sort','new');
+@endphp
 
-  <div class="container-page pt-3 pb-0">
-    <div class="inline-flex gap-2 text-sm">
-      @php
-        $tab = 'px-3 py-1 rounded-xl border border-accent-300 text-accent-700 dark:border-accent-600 dark:text-accent-100';
-        $tabActive = 'bg-primary-500 text-white border-primary-500';
-      @endphp
-      <a href="{{ $link('new') }}" class="{{ $tab }} {{ $active==='new' ? $tabActive : '' }}">新着順</a>
-      <a href="{{ $link('old') }}" class="{{ $tab }} {{ $active==='old' ? $tabActive : '' }}">古い順</a>
-      @auth
-        <a href="{{ $link('near') }}" class="{{ $tab }} {{ $active==='near' ? $tabActive : '' }}">価値観の近い順</a>
-        <a href="{{ $link('far')  }}" class="{{ $tab }} {{ $active==='far'  ? $tabActive : '' }}">価値観の遠い順</a>
-      @endauth
-      @guest
-        <span class="{{ $tab }} opacity-60" title="ログインすると使えます">価値観の近い順</span>
-        <span class="{{ $tab }} opacity-60" title="ログインすると使えます">価値観の遠い順</span>
-      @endguest
-    </div>
+<div x-data="{ open:false, selected: @json($selected) }" class="card mb-4">
+  <div class="flex flex-wrap items-center gap-2">
+
+    {{-- 並び替えタブ（既存のスタイルに合わせて） --}}
+    <a href="{{ route('posts.index', array_merge(request()->except('page','tags'), ['sort'=>'new'])) }}"
+       class="btn-outline @if($sortNow==='new') !bg-orange-50 !border-orange-400 !text-orange-700 @endif">新着順</a>
+    <a href="{{ route('posts.index', array_merge(request()->except('page','tags'), ['sort'=>'old'])) }}"
+       class="btn-outline @if($sortNow==='old') !bg-orange-50 !border-orange-400 !text-orange-700 @endif">古い順</a>
+    <a href="{{ route('posts.index', array_merge(request()->except('page','tags'), ['sort'=>'near'])) }}"
+       class="btn-outline @if($sortNow==='near') !bg-orange-50 !border-orange-400 !text-orange-700 @endif">価値が近い順</a>
+    <a href="{{ route('posts.index', array_merge(request()->except('page','tags'), ['sort'=>'far'])) }}"
+       class="btn-outline @if($sortNow==='far') !bg-orange-50 !border-orange-400 !text-orange-700 @endif">価値が遠い順</a>
+
+    {{-- タグフィルターボタン（選択数バッジ付き） --}}
+    <button type="button"
+            @click="open = !open"
+            class="btn-outline ml-auto inline-flex items-center gap-2">
+      <span>タグフィルター</span>
+      <span x-show="selected.length>0"
+            x-text="selected.length"
+            class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 text-white text-xs px-1"
+            ></span>
+    </button>
   </div>
+
+    {{-- 開閉パネル --}}
+    <div x-show="open" x-transition
+        @click.outside="open=false" @keydown.escape.window="open=false"
+        class="mt-3 border-t pt-3">
+        <form method="GET" action="{{ route('posts.index') }}" class="flex flex-col gap-3">
+
+        {{-- 現在のsortを維持 --}}
+        <input type="hidden" name="sort" value="{{ $sortNow }}"/>
+
+        <div class="flex flex-wrap gap-2">
+            @foreach($allTags as $tag)
+            @php $active = in_array($tag->id, $selected); @endphp
+            <label class="cursor-pointer">
+                <input type="checkbox" name="tags[]" value="{{ $tag->id }}"
+                    class="peer sr-only"
+                    @checked($active)
+                    @change="
+                        // 画面上の選択数バッジを即時更新
+                        selected = Array.from($root.querySelectorAll('input[name=\'tags[]\']:checked')).map(i=>parseInt(i.value))
+                    ">
+                <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors
+                            peer-checked:bg-orange-50 peer-checked:border-orange-400 peer-checked:text-orange-700
+                            peer-focus:outline peer-focus:outline-2 peer-focus:outline-orange-300">
+                #{{ $tag->name }}
+                </span>
+            </label>
+            @endforeach
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button class="btn-primary px-3 py-1.5 rounded-xl">絞り込む</button>
+            @if(!empty($selected))
+            <a href="{{ route('posts.index', ['sort'=>$sortNow]) }}" class="btn-outline px-3 py-1.5 rounded-xl">クリア</a>
+            @endif
+            <button type="button" class="btn-outline px-3 py-1.5 rounded-xl ml-auto" @click="open=false">閉じる</button>
+        </div>
+        </form>
+    </div>
+
+
+
+
 
   <div class="container-page">
     <div class="flex justify-end mb-4">

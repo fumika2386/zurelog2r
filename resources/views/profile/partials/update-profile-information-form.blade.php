@@ -9,6 +9,8 @@
         </p>
     </header>
 
+
+    
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
@@ -70,6 +72,34 @@
             <x-input-error :messages="$errors->get('description')" class="mt-2" />
         </div>
 
+        @php
+        $allTags = \Illuminate\Support\Facades\Schema::hasTable('tags')
+            ? \App\Models\Tag::orderBy('sort_order')->get()
+            : collect();
+        $myTagIds = auth()->user()->tags()->pluck('tags.id')->all();
+        @endphp
+
+        @if($allTags->isNotEmpty())
+        <div class="mt-6">
+            <label class="block font-semibold mb-2">ハッシュタグ（自分をタグづけ）</label>
+            <div class="flex flex-wrap gap-2">
+            @foreach($allTags as $tag)
+                <label class="inline-flex items-center gap-2 rounded-full border px-3 py-1 cursor-pointer">
+                <input type="checkbox" name="tags[]" value="{{ $tag->id }}"
+                        @checked(in_array($tag->id, old('tags', $myTagIds)))
+                        class="form-checkbox text-primary-600">
+                <span class="text-sm">#{{ $tag->name }}</span>
+                </label>
+            @endforeach
+            </div>
+            @error('tags') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+            @error('tags.*') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+        </div>
+        @endif
+
+
+
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
@@ -83,6 +113,9 @@
                 >{{ __('Saved.') }}</p>
             @endif
         </div>
+
+        
+
     </form>
 </section>
 

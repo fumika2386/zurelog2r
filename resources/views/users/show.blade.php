@@ -21,6 +21,18 @@
           </p>
         @endif
       </div>
+
+        {{-- resources/views/users/show.blade.php のプロフィールカード内などに --}}
+        @php $tags = $user->tags()->orderBy('sort_order')->get(); @endphp
+        @if($tags->isNotEmpty())
+        <div class="mt-3 flex flex-wrap gap-2">
+            @foreach($tags as $tag)
+            <span class="badge">#{{ $tag->name }}</span>
+            @endforeach
+        </div>
+        @endif
+
+
     </section>
 
     @php

@@ -79,6 +79,10 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\ValueAnswer::class);
     }
 
+    // app/Models/User.php （追記）
+    public function tags(){
+    return $this->belongsToMany(\App\Models\Tag::class, 'user_tag')->withTimestamps();
+    }
 
 }
 

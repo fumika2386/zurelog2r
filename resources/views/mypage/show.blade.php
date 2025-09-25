@@ -23,7 +23,22 @@
 
         <p class="mt-4 whitespace-pre-wrap text-accent-700 dark:text-accent-200">
           {{ $user->description ?: '自己紹介はまだありません。' }}
-        </p>
+                    </p>
+
+            @php
+            $tags = $user->relationLoaded('tags')
+                ? $user->tags
+                : $user->tags()->orderBy('sort_order')->get();
+            @endphp
+
+            @if($tags->isNotEmpty())
+            <div class="mt-4 flex flex-wrap gap-2">
+                @foreach($tags as $tag)
+                <span class="badge">#{{ $tag->name }}</span>
+                @endforeach
+            </div>
+            @endif
+
 
         <div class="mt-6 flex items-center gap-6 text-sm">
           <div><span class="font-semibold">{{ $user->posts_count ?? 0 }}</span> 投稿</div>
@@ -36,6 +51,8 @@
             </a>
           </div>
         </div>
+
+
 
         <a href="{{ route('profile.edit') }}" class="mt-6 inline-flex btn-primary">
           プロフィールを編集

@@ -14,6 +14,8 @@ class PostController extends Controller
     // 一覧（公開）
     public function index(Request $request)
     {
+        $tagIds = collect($request->query('tags', []))
+            ->map(fn($v)=>(int)$v)->filter()->unique()->values();
         $sort = $request->query('sort', 'new'); // new|old|near|far
         $uid  = optional($request->user())->id;
 
@@ -29,6 +31,22 @@ class PostController extends Controller
                 $stampCounts,
                 ['reactions as reactions_total' => fn($q) => $q]  // 合計
             ));
+            
+        if ($tagIds->isNotEmpty()) {
+            $ids  = $tagIds->all();
+            $need = count($ids);
+
+            // AND（すべて含む）
+            $query->whereHas(
+                'user.tags',
+                fn($q) => $q->whereIn('tags.id', $ids),
+                '=',
+                $need
+            );
+
+            // OR（いずれか含む）にしたい場合は上の塊を↓に差し替え
+            // $query->whereHas('user.tags', fn($q) => $q->whereIn('tags.id', $ids));
+        }
 
         // 2) 価値観ベースの並べ替え（ログイン + 回答がある場合のみ）
         if (in_array($sort, ['near','far'], true) && $uid) {
@@ -63,6 +81,7 @@ class PostController extends Controller
                 $sort = 'new';
             }
         }
+        
 
         // 3) 時系列の並べ替え（near/far で未設定だった場合のみ）
         if ($sort === 'old')      $query->orderBy('posts.created_at', 'asc');
