@@ -9,6 +9,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PostReactionController;
+
 
 Route::get('/', fn () => view('welcome'));
 
@@ -46,6 +48,9 @@ Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user'
         ->whereNumber('user')->name('users.unfollow');
 });
 
+
+Route::post('/posts/{post}/react', [PostReactionController::class, 'store'])
+    ->name('posts.react');
 /** Posts（公開：閲覧）— 最後に置く */
 Route::resource('posts', PostController::class)->only(['index','show']);
 

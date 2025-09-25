@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Topic;
+use App\Models\PostReaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 
 class PostController extends Controller
 {
@@ -13,23 +15,31 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $sort = $request->query('sort', 'new'); // new|old|near|far
+        $uid  = optional($request->user())->id;
 
-        // ベースクエリ
-        $query = Post::with(['user','topic']);
+        // 1) ベース + スタンプ集計を常時 withCount（N+1回避）
+        $stampCounts = [];
+        for ($i = 0; $i <= 4; $i++) {
+            $stampCounts["reactions as reactions_s{$i}"] = fn($q) => $q->where('stamp', $i);
+        }
 
-        // 価値観ベースの並べ替え（ログイン済み + 回答がある場合のみ）
-        if (in_array($sort, ['near','far'], true) && $request->user()) {
-            $meId = $request->user()->id;
+        $query = Post::query()
+            ->with(['user', 'topic'])
+            ->withCount(array_merge(
+                $stampCounts,
+                ['reactions as reactions_total' => fn($q) => $q]  // 合計
+            ));
 
-            // 自分の回答が1つも無ければ、価値観ソートは無効化
-            $hasMyAnswers = DB::table('value_answers')->where('user_id', $meId)->exists();
+        // 2) 価値観ベースの並べ替え（ログイン + 回答がある場合のみ）
+        if (in_array($sort, ['near','far'], true) && $uid) {
 
+            $hasMyAnswers = DB::table('value_answers')->where('user_id', $uid)->exists();
             if ($hasMyAnswers) {
-                // 投稿者(user_id)ごとの一致率 similarity ∈ [0,1] を算出するサブクエリ
+                // ※列名に注意：スキーマが 'answer' なら a.value/b.value を 'answer' に変更
                 $simSub = DB::table('value_answers as a')
-                    ->join('value_answers as b', function ($join) use ($meId) {
+                    ->join('value_answers as b', function ($join) use ($uid) {
                         $join->on('b.question_id', '=', 'a.question_id')
-                            ->where('b.user_id', '=', $meId);
+                             ->where('b.user_id', '=', $uid);
                     })
                     ->select(
                         'a.user_id',
@@ -39,10 +49,9 @@ class PostController extends Controller
                     )
                     ->groupBy('a.user_id');
 
-                // posts に similarity を結合して並べ替え
-                $query = $query
-                    ->leftJoinSub($simSub, 'sim', 'posts.user_id', '=', 'sim.user_id')
-                    ->select('posts.*', DB::raw('COALESCE(sim.similarity, 0) as similarity')); // 未回答=0
+                // 既存の $query に join（← ここが大事。再代入で消さない）
+                $query->leftJoinSub($simSub, 'sim', 'posts.user_id', '=', 'sim.user_id')
+                      ->select('posts.*', DB::raw('COALESCE(sim.similarity, 0.5) as similarity')); // 未比較=0.5に中寄せ
 
                 if ($sort === 'near') {
                     $query->orderByDesc('similarity')->orderByDesc('posts.created_at');
@@ -50,31 +59,42 @@ class PostController extends Controller
                     $query->orderBy('similarity')->orderByDesc('posts.created_at');
                 }
             } else {
-                // 自分の回答が無い → 新着順にフォールバック
+                // 回答ゼロ → 新着にフォールバック
                 $sort = 'new';
             }
         }
 
-        // 時系列の並べ替え
-        if ($sort === 'old') {
-            $query->orderBy('posts.created_at', 'asc');
-        } elseif ($sort === 'new') {
-            $query->orderBy('posts.created_at', 'desc');
-        }
+        // 3) 時系列の並べ替え（near/far で未設定だった場合のみ）
+        if ($sort === 'old')      $query->orderBy('posts.created_at', 'asc');
+        elseif ($sort === 'new')  $query->orderBy('posts.created_at', 'desc');
 
-        $posts = $query->paginate(10)->withQueryString(); // ページングしてクエリ保持
+        $posts = $query->paginate(10)->withQueryString();
 
         return view('posts.index', compact('posts', 'sort'));
     }
 
-
     // 詳細（公開）
     public function show(Post $post)
     {
-        $post->load(['user','topic']);
+        // 投稿本体 + スタンプ集計を eager load
+        $stampCounts = [];
+        for ($i = 0; $i <= 4; $i++) {
+            $stampCounts["reactions as reactions_s{$i}"] = fn($q) => $q->where('stamp', $i);
+        }
+
+        $post->load(['user','topic'])
+             ->loadCount(array_merge(
+                 $stampCounts,
+                 ['reactions as reactions_total' => fn($q) => $q]
+             ));
+
+        // ※ Blade 側で my stamp が必要なら、個別に取得
+        // $myStamp = auth()->check()
+        //     ? $post->reactions()->where('user_id', auth()->id())->value('stamp')
+        //     : null;
+
         return view('posts.show', compact('post'));
     }
-
     // 作成フォーム（/posts/create?topic_id=123）
     public function create(Request $request)  // ← use Illuminate\Http\Request; を使う形でOK
     {

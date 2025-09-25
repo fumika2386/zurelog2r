@@ -52,6 +52,26 @@
                 {{ $post->title }}
             </a>
             <div class="text-xs text-accent-500">{{ $post->created_at->format('Y/m/d H:i') }}</div>
+            @php
+                $r = [
+                    (int)($post->r_s0 ?? 0),
+                    (int)($post->r_s1 ?? 0),
+                    (int)($post->r_s2 ?? 0),
+                    (int)($post->r_s3 ?? 0),
+                    (int)($post->r_s4 ?? 0),
+                ];
+                $sum = (int)($post->r_total ?? array_sum($r));
+                @endphp
+                @if($sum > 0)
+                <div class="mt-2 flex flex-wrap gap-2 text-sm">
+                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5">👍 {{ $r[0] }}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5">🫶 {{ $r[1] }}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5">😮 {{ $r[2] }}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5">🎓 {{ $r[3] }}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5">❓ {{ $r[4] }}</span>
+                </div>
+                @endif
+
             @if($post->body)
                 <p class="mt-1 text-sm text-accent-700 dark:text-accent-200 line-clamp-3">
                 {{ \Illuminate\Support\Str::limit(strip_tags($post->body), 160) }}
