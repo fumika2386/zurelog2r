@@ -8,6 +8,7 @@ use App\Http\Controllers\ValueSurveyController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\OnboardingController;
 
 Route::get('/', fn () => view('welcome'));
 
@@ -25,7 +26,9 @@ Route::get('/users/{user}/followings', [FollowController::class, 'followings'])-
 Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user')->name('users.show');
 
 /** 認証必須（ここで /posts/create を“先に”登録） */
-Route::middleware(['auth','verified'])->group(function () {
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])
+        ->name('onboarding.complete');
+    Route::middleware(['auth','verified'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::resource('posts', PostController::class)->only(['store','edit','update','destroy']);
 
