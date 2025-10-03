@@ -2,29 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+
 class MyPageController extends Controller
 {
-    public function show(\Illuminate\Http\Request $request)
+    public function show(Request $request)
     {
         $user = auth()->user()
-            ->load([
-                'tags' => fn($q) => $q->orderBy('sort_order'),
-            ])
+            ->load(['tags' => fn($q) => $q->orderBy('sort_order')])
             ->loadCount(['posts','followers','followings']);
 
-            $posts = $user->posts()
-        ->withCount([
-            'reactions as r_total'   => fn($q)=>$q,
-            'reactions as r_s0'      => fn($q)=>$q->where('stamp',0),
-            'reactions as r_s1'      => fn($q)=>$q->where('stamp',1),
-            'reactions as r_s2'      => fn($q)=>$q->where('stamp',2),
-            'reactions as r_s3'      => fn($q)=>$q->where('stamp',3),
-            'reactions as r_s4'      => fn($q)=>$q->where('stamp',4),
-        ])
-        ->latest()->paginate(10)->withQueryString();
+        // スタンプ集計（エイリアス名を r_s* / r_total に統一）
+        $stampCounts = [];
+        for ($i=0; $i<=4; $i++) {
+            $stampCounts["reactions as r_s{$i}"] = fn($q) => $q->where('stamp', $i);
+        }
+
+        $posts = $user->posts()
+            ->withCount(array_merge(
+                $stampCounts,
+                ['reactions as r_total' => fn($q) => $q] // 合計
+            ))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('mypage.show', compact('user','posts'));
-
     }
-
 }
+
