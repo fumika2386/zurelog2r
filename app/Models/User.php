@@ -54,19 +54,35 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Post::class);
     }
 
-    // フォロー関連（後でfollowsテーブル作成時に有効）
-    public function followers()
-    {
-        return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id');
-        
-    }
+    // 自分がフォローしているユーザーたち
     public function followings()
     {
-        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followed_id');
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followed_id')
+                    ->withTimestamps();
     }
+
+    // 自分をフォローしているユーザーたち
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id')
+                    ->withTimestamps();
+    }
+
+    // 便利メソッド
+    public function isFollowing(User $user): bool
+    {
+        return $this->followings()->where('users.id', $user->id)->exists();
+    }
+    
     public function valueAnswers()
     {
         return $this->hasMany(\App\Models\ValueAnswer::class);
     }
 
+    // app/Models/User.php （追記）
+    public function tags(){
+    return $this->belongsToMany(\App\Models\Tag::class, 'user_tag')->withTimestamps();
+    }
+
 }
+

@@ -15,11 +15,22 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('フィード') }}
                     </x-nav-link>
+                        {{-- ★ 新規投稿（ログイン時のみ） --}}
+                    @auth
+                        <x-nav-link href="{{ route('posts.create') }}" :active="request()->routeIs('posts.create')">
+                            新規投稿
+                        </x-nav-link>
+                    @endauth
+                    
+                    <x-nav-link href="{{ route('topics.index') }}" :active="request()->routeIs('topics.*')">
+                        トピック
+                    </x-nav-link>
+
                     <x-nav-link href="{{ route('mypage.show') }}" :active="request()->routeIs('mypage.show')">
                         マイページ
                     </x-nav-link>
                     <x-nav-link href="{{ route('values.survey.show') }}" :active="request()->routeIs('values.survey.*')">
-                        Survey
+                        価値観アンケート
                     </x-nav-link>
 
                 </div>
@@ -42,7 +53,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('プロフィール編集') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -58,6 +69,9 @@
                     </x-slot>
                 </x-dropdown>
             </div>
+
+
+
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
@@ -76,6 +90,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('topics.index') }}" :active="request()->routeIs('topics.*')">
+                Topics
             </x-responsive-nav-link>
 
             <x-nav-link href="{{ route('mypage.show') }}" :active="request()->routeIs('mypage.show')">
@@ -110,3 +127,10 @@
         </div>
     </div>
 </nav>
+<style>
+  [data-active="true"]{position:relative;}
+  [data-active="true"]::after{
+    content:""; position:absolute; left:0; bottom:-10px; width:100%; height:3px;
+    background:#f97316; border-radius:2px; /* primary-500 */
+  }
+</style>

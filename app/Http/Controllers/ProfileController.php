@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Tag;
+
 
 class ProfileController extends Controller
 {
@@ -44,8 +46,13 @@ class ProfileController extends Controller
 
         $user->save();
 
+        $tagIds = collect($request->input('tags', []))
+                ->map(fn($id) => (int) $id)->filter()->unique()->values();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->tags()->sync($tagIds);
+
+        return Redirect::route('profile.edit')->with('toast.success', 'プロフィールを更新しました');
+
     }
 
     /**

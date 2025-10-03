@@ -27,6 +27,8 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'description' => ['nullable','string','max:1000'],
             'avatar' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:4096'],
+            'tags'        => ['nullable', 'array'],
+            'tags.*'      => ['integer', 'exists:tags,id'],
         ];
     }
 }
