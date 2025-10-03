@@ -27,3 +27,15 @@ Thumbs.db
 repo/
 repo.zip
 
+
+/node_modules/
+/vendor/
+
+/public/hot
+
+/public/build
+
+.env.* 
+
+!.env.example
+
